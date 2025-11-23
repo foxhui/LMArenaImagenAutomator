@@ -10,7 +10,7 @@ chrome:
   # 浏览器可执行文件路径 (留空则使用Puppeteer默认)
   # Windows系统示例 "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
   # Linux系统示例 "/usr/bin/chromium"
-  path: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
+  #path: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
   # 是否启用无头模式
   headless: false
   # 是否启用 GPU (无GPU设备运行请使用false)
