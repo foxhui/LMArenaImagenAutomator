@@ -459,12 +459,12 @@ chrome:
 
 1. **启动虚拟显示器并运行程序** (屏幕号 99 可按需修改):
    ```bash
-   xvfb-run --server-num=99 --server-args="-ac -screen 0 1280x720x16" npm start
+   xvfb-run --server-num=99 --server-args="-ac -screen 0 1280x720x24" npm start
    ```
 
 2. **将虚拟显示器映射至 VNC**:
    ```bash
-   x11vnc -display :99 -localhost -nopw -once -noxdamage -ncache 10
+   x11vnc -display :99 -localhost -nopw -once -noxdamage -ncache 10 -forever
    ```
 
 3. **建立 SSH 隧道连接 VNC** (安全推荐):
