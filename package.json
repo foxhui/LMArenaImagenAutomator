@@ -11,6 +11,7 @@
 		"genkey": "node lib/genApiKey.js"
 	},
 	"dependencies": {
+		"@inquirer/prompts": "^8.0.1",
 		"ghost-cursor": "^1.4.1",
 		"got-scraping": "^4.1.2",
 		"js-yaml": "^4.1.1",

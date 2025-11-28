@@ -1,0 +1,55 @@
+# 日志等级: debug | info | warn | error
+logLevel: info
+
+server:
+  # 服务器模式: openai (标准兼容) | queue (流式队列)
+  type: openai
+  # 监听端口
+  port: 3000
+  # 鉴权 Token (Bearer Token) (可使用 npm run genkey 生成)
+  auth: sk-change-me-to-your-secure-key
+
+backend:
+  # 选择后端: lmarena (竞技场) | gemini_biz (Gemini Enterprise Business)
+  type: lmarena
+  
+  # Gemini Business 设置
+  geminiBiz:
+    # 入口链接
+    # 示例: "https://business.gemini.google/home/cid/8888a888-b6e0-88be-86e1-888cf3ee8cf4?csesidx=1666666666"
+    entryUrl: ""
+
+queue:
+  # 最大排队数
+  # 仅对OpenAI模式做出限制，非必要不建议更改
+  # 因常见客户端都有超时保护，队列大于2是一定会触发超时保护的
+  maxQueueSize: 2
+  # 图片数量上限 
+  # 网页最多支持10个附件，如果设置大于10则直接丢弃超出10的图片
+  imageLimit: 5
+
+chrome:
+  # 浏览器可执行文件路径 (留空则使用Puppeteer默认)
+  # Windows系统示例 "C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe"
+  # Linux系统示例 "/usr/bin/google-chrome"
+  # path: "C:\\\\Program Files\\\\Google\\\\Chrome\\\\Application\\\\chrome.exe"
+  
+  # 是否启用无头模式
+  headless: false
+  
+  # 是否启用 GPU (无GPU设备运行请使用false)
+  gpu: false
+  
+  # 代理设置
+  proxy:
+    # 是否启用代理
+    enable: false
+    # 代理类型: http 或 socks5
+    type: http
+    # 代理主机
+    host: 127.0.0.1
+    # 代理端口
+    port: 7890
+    # 代理认证 (可选)
+    # user: username
+    # passwd: password
