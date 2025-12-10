@@ -6,10 +6,11 @@
 LMArenaImagenAutomator 是一个基于 Playwright + Camoufox 的自动化图像生成工具，通过模拟人类操作与 LMArena、Gemini 等网站交互提供图像生成服务到OpenAI格式的接口。
 
 当前支持的网站：
-  - LMArena
-  - Gemini Enterprise Business
-  - Nano Banana Free
-  - 未来可能支持更多网站...
+  - [LMArena](https://lmarena.ai/)
+  - [Gemini Enterprise Business](https://business.gemini.google/)
+  - [Nano Banana Free](https://nanobananafree.ai/)
+  - [zAI](https://zai.is/)
+  - 未来可能支持更多网站。。。
 
 ### ✨ 主要特性
 
