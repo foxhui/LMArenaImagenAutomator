@@ -1,6 +1,6 @@
 services:
   lmarena-imagen-automator:
-    build: .
+    image: foxhui/lmarena-imagen-automator:latest
     container_name: lmarena-imagen-automator
     restart: unless-stopped
     ports:
