@@ -8,6 +8,7 @@ import { logger } from './lib/utils/logger.js';
 import crypto from 'crypto';
 import { spawn, spawnSync } from 'child_process';
 import os from 'os';
+import net from 'net';
 
 // ==================== 命令行参数处理 ====================
 
@@ -22,9 +23,47 @@ function checkCommand(cmd) {
 }
 
 /**
+ * 检查端口是否可用
+ * @param {number} port - 端口号
+ * @returns {Promise<boolean>}
+ */
+function isPortAvailable(port) {
+    return new Promise((resolve) => {
+        const server = net.createServer();
+
+        server.once('error', () => {
+            resolve(false);
+        });
+
+        server.once('listening', () => {
+            server.close();
+            resolve(true);
+        });
+
+        server.listen(port);
+    });
+}
+
+/**
+ * 查找可用的 VNC 端口
+ * @param {number} startPort - 起始端口 (默认 5900)
+ * @param {number} maxAttempts - 最大尝试次数 (默认 10)
+ * @returns {Promise<number|null>}
+ */
+async function findAvailableVncPort(startPort = 5900, maxAttempts = 10) {
+    for (let i = 0; i < maxAttempts; i++) {
+        const port = startPort + i;
+        if (await isPortAvailable(port)) {
+            return port;
+        }
+    }
+    return null;
+}
+
+/**
  * 处理 Xvfb 和 VNC 启动参数（仅 Linux）
  */
-function handleDisplayParams() {
+async function handleDisplayParams() {
     const args = process.argv.slice(2);
     const hasXvfb = args.includes('-xvfb');
     const hasVnc = args.includes('-vnc');
@@ -72,10 +111,21 @@ function handleDisplayParams() {
                 }
 
                 const display = process.env.DISPLAY || ':99';
-                logger.info('服务器', '正在启动 VNC 服务器...');
+
+                // 自动查找可用端口 (从 5900 开始)
+                logger.info('服务器', '正在查找可用的 VNC 端口...');
+                const vncPort = await findAvailableVncPort(5900, 10);
+
+                if (!vncPort) {
+                    logger.error('服务器', '无法找到可用的 VNC 端口 (已尝试 5900-5909)');
+                    process.exit(1);
+                }
+
+                logger.info('服务器', `正在启动 VNC 服务器 (端口 ${vncPort})...`);
 
                 const vncProcess = spawn('x11vnc', [
                     '-display', display,
+                    '-rfbport', vncPort.toString(),
                     '-localhost',
                     '-nopw',
                     '-once',
@@ -101,8 +151,8 @@ function handleDisplayParams() {
                     process.exit(0);
                 });
 
-                logger.info('服务器', 'VNC 服务器已启动');
-                logger.warn('服务器', '连接方式: 在本地运行 VNC 客户端连接 5900 端口');
+                logger.info('服务器', 'VNC 服务器已成功启动');
+                logger.warn('服务器', `VNC 连接端口: ${vncPort}`);
             }
 
             return;
@@ -153,7 +203,7 @@ function handleDisplayParams() {
 }
 
 // 执行参数处理
-const displayResult = handleDisplayParams();
+const displayResult = await handleDisplayParams();
 if (displayResult === 'XVFB_REDIRECT') {
     // 已经重定向到 Xvfb，不再继续执行
     // 这个进程将等待子进程退出
