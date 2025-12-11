@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2025-12-12
+
+### Added
+- **Cookie获取**
+  - 增加 Cookie 获取接口，可利用本项目的自动续登功能获取最新的 Cookie 给其他工具使用
+
+### Changed
+- **自动续登**
+  - 监听逻辑修改为全局监听，任何时候触发跳转都会执行自动登录（如会话过期自动跳转）
+
+### Fixed
+- **修复杂项**
+  - 修复自动登录时可能会出现的问题
+  - 修复启动VNC服务器时端口可能冲突的问题
+  - 修复遗留的浏览器启动参数导致的小问题
+  - 修复 zAI 返回错误时无反馈直到请求超时的问题
+
 ## [2.2.0] - 2025-12-11
 
 ### Added

@@ -226,7 +226,56 @@ curl -X GET http://127.0.0.1:3000/v1/models \
 
 </details>
 
-#### 3. 多模态请求 (图生图/图生文)
+#### 3. 获取Cookies
+
+**功能说明**：可利用本项目的自动续登功能获取最新Cookie给其他工具使用。
+
+**请求端点**
+```
+GET http://127.0.0.1:3000/v1/cookies
+```
+
+<details>
+<summary>📄 查看API请求示例</summary>
+
+**请求示例**
+```bash
+curl -X GET http://127.0.0.1:3000/v1/cookies \
+  -H "Authorization: Bearer your-secret-key"
+```
+
+**响应格式**
+```json
+{
+  "cookies": [
+    {
+      "name": "_GRECAPTCHA",
+      "value": "09ADxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "domain": "www.google.com",
+      "path": "/recaptcha",
+      "expires": 1780000000,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "OTZ",
+      "value": "8888888_24_24__24_",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1760000000,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    }
+    .......... more
+  ]
+}
+```
+
+</details>
+
+#### 4. 多模态请求 (图生图/图生文)
 
 **功能说明**：支持在消息中附带图片进行对话或生成。
 

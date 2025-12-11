@@ -414,7 +414,27 @@ async function startServer() {
             return;
         }
 
-        // 2. 聊天补全接口
+        // 2. 获取 Cookies 接口
+        if (req.method === 'GET' && req.url === '/v1/cookies') {
+            try {
+                if (!browserContext || !browserContext.page) {
+                    res.writeHead(503, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Browser not initialized' }));
+                    return;
+                }
+                const context = browserContext.page.context();
+                const cookies = await context.cookies();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ cookies }));
+            } catch (err) {
+                logger.error('服务器', '获取 Cookies 失败', { id, error: err.message });
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: err.message }));
+            }
+            return;
+        }
+
+        // 3. 聊天补全接口
         if (req.method === 'POST' && req.url.startsWith('/v1/chat/completions')) {
             const chunks = [];
             req.on('data', chunk => chunks.push(chunk));
