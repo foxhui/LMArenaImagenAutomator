@@ -23,62 +23,60 @@ LMArenaImagenAutomator 是一个基于 Playwright + Camoufox 的自动化图像�
 
 ---
 
-## 🚀 快速开始
+## 🚀 快速部署
 
-### 系统要求
+本项目支持 **源码直接运行** 和 **Docker 容器化部署** 两种方式。
 
-- **Node.js**: v20.0.0 或更高版本 (需 ABI 115+)
+### 📋 环境要求
+- **Node.js**: v20.0.0+ (ABI 115+)
 - **操作系统**: Windows / Linux / macOS
-- **运行环境**: Camoufox (基于 Firefox 的反指纹检测浏览器)
+- **核心依赖**: Camoufox (安装过程中自动获取)
 
-> **开发环境参考**
-> - Windows 10: Node.js v22.20.0
-> - Debian 12: Node.js v20.19.0
+### 🛠️ 方式一：手动部署
 
-### 安装步骤
-
-1. **获取项目**
-   克隆代码仓库或下载源码解压。
-
-2. **准备配置**
-   复制配置文件模板：
+1. **安装与配置**
    ```bash
+   # 1. 复制配置文件
    cp config.example.yaml config.yaml
-   ```
 
-3. **安装依赖**
-   ```bash
-   # 安装基础依赖
+   # 2. 安装依赖与初始化环境
    pnpm install
-
-   # 初始化环境 (下载浏览器及预编译文件)
-   # ⚠️ 若无法连接 GitHub，请先在 config.yaml 中配置代理
-   npm run init
+   npm run init  # ⚠️ 需确保网络能连接 GitHub
    ```
 
-4. **启动服务**
+2. **启动服务**
    ```bash
-   # 登录模式 (首次使用推荐，用于手动登录)
-   npm start -- -login
-
-   # 标准模式
-   npm start
-
-   # Linux创建虚拟显示器到VNC
-   npm start -- -xvfb -vnc
+   npm start -- -login  # 首次运行（进入登录模式）
+   npm start            # 标准运行
    ```
 
-5. **接口测试 (可选)**
-   ```bash
-   npm test
-   ```
+### 🐳 方式二：Docker 部署
+
+> ⚠️ **特别说明**：首次运行需设置 `LOGIN_MODE=true`，并通过 VNC 客户端连接 `localhost:5900` 完成网页登录验证。
+
+**Docker CLI**
+```bash
+docker run -d --name lmarena-automator \
+  -p 3000:3000 -p 5900:5900 \
+  -v "$(pwd)/data:/app/data" \
+  -e LOGIN_MODE=true \
+  --shm-size=2gb \
+  foxhui/lmarena-imagen-automator:latest
+```
+
+**Docker Compose**
+```bash
+# 确保 docker-compose.yml 中 LOGIN_MODE=true
+docker-compose up -d
+```
+
 ---
 
 ## 📖 使用方法
 
 ### ⚠️ 首次使用必读
 
-1. **首次启动**：
+1. **启动登录模式**：
    - 请使用 `npm start -- -login` 进入登录模式（关闭无头模式）。
    - Linux用户使用 `npm start -- -xvfb -vnc` 进入登录模式且创建虚拟显示器到VNC。
 2. **完成初始化**：
@@ -407,7 +405,7 @@ curl -X GET http://127.0.0.1:3000/v1/cookies \
 | **内存** | 1 GB | 2 GB 及以上 | 
 
 **实测环境表现**：
-- **Oracle 免费机** (1C1G, Debian 12)：资源紧张，偶有卡顿，仅供尝鲜或轻度使用。
+- **Oracle 免费机** (1C1G, Debian 12)：资源紧张，比较卡顿，仅供尝鲜或轻度使用。
 - **阿里云轻量云** (2C2G, Debian 11)：运行流畅稳定，为本项目开发测试基准环境。
 
 ## 📄 许可证和免责声明
@@ -415,7 +413,7 @@ curl -X GET http://127.0.0.1:3000/v1/cookies \
 本项目采用 [MIT License](LICENSE) 开源。
 
 **免责声明**:
-本项目仅供学习交流使用。如果因使用该项目造成的任何后果（包括但不仅限于账号被禁用），作者和该项目均不承担任何责任。请遵守相关网站和服务的使用条款，以及相关数据的备份工作。
+本项目仅供学习交流使用。如果因使用该项目造成的任何后果 (包括但不仅限于账号被禁用)，作者和该项目均不承担任何责任。请遵守相关网站和服务的使用条款 (ToS)，以及相关数据的备份工作。
 
 ---
 
