@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **后端聚合**
   - 可根据请求的模型id自动选择可用的适配器且遵循配置文件中的优先级
 
+### Fixed
+- **修复杂项**
+  - 修复在 MacOS 下初始化步骤缺少导致的浏览器启动失败
+
 ## [2.2.2] - 2025-12-12
 
 ### Added
