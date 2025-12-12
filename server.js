@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { getBackend } from './lib/backend/index.js';
-import { getModelsForBackend, resolveModelId, getImagePolicy, IMAGE_POLICY } from './lib/backend/models.js';
+import { IMAGE_POLICY } from './lib/backend/models.js';
 import { logger } from './lib/utils/logger.js';
 import crypto from 'crypto';
 import { spawn, spawnSync } from 'child_process';
@@ -216,7 +216,16 @@ if (displayResult === 'XVFB_REDIRECT') {
 // ==================== 服务器主逻辑 ====================
 
 // 使用统一后端获取配置和函数
-const { config, name, initBrowser, generateImage, TEMP_DIR } = getBackend();
+const {
+    config,
+    name,
+    initBrowser,
+    generateImage,
+    TEMP_DIR,
+    resolveModelId,
+    getModels,
+    getImagePolicy
+} = getBackend();
 
 const PORT = config.server.port || 3000;
 const AUTH_TOKEN = config.server.auth;
@@ -408,7 +417,7 @@ async function startServer() {
         // --- 路由分发 ---
         // 1. 模型列表接口
         if (req.method === 'GET' && req.url === '/v1/models') {
-            const models = getModelsForBackend(name);
+            const models = getModels();
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(models));
             return;
@@ -561,7 +570,7 @@ async function startServer() {
                     // 解析模型参数
                     let modelId = null;
                     if (data.model) {
-                        modelId = resolveModelId(name, data.model);
+                        modelId = resolveModelId(data.model);
                         if (modelId) {
                             logger.info('服务器', `触发模型: ${data.model} (${modelId})`, { id });
                         } else {
@@ -583,7 +592,7 @@ async function startServer() {
 
                     // 图片策略校验
                     const hasImage = imagePaths.length > 0;
-                    const policy = data.model ? getImagePolicy(name, data.model) : IMAGE_POLICY.OPTIONAL;
+                    const policy = data.model ? getImagePolicy(data.model) : IMAGE_POLICY.OPTIONAL;
 
                     if (policy === IMAGE_POLICY.REQUIRED && !hasImage) {
                         const errorMsg = `Model ${data.model} requires a reference image.`;

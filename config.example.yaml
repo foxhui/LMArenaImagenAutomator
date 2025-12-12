@@ -25,7 +25,16 @@ backend:
   # - nanobananafree_ai (Nano Banana Free)
   # - zai_is (zAI)
   type: lmarena
-  
+
+  # 聚合模式设置 (优先级高于 type)
+  # 启用后，系统将复用单个浏览器标签页处理所有后端任务
+  merge:
+    enable: false
+    # 聚合列表 (按优先级排序，模型匹配时优先使用靠前的适配器)
+    type:
+      - zai_is
+      - lmarena
+
   # Gemini Business 设置
   geminiBiz:
     # 入口链接
