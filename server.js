@@ -14,9 +14,9 @@
  */
 
 import http from 'http';
-import { getBackend } from './lib/backend/index.js';
-import { logger } from './lib/utils/logger.js';
-import { handleDisplayParams, createQueueManager, createRouter } from './lib/server/index.js';
+import { getBackend } from './src/backend/index.js';
+import { logger } from './src/utils/logger.js';
+import { handleDisplayParams, createQueueManager, createRouter } from './src/server/index.js';
 
 // ==================== 命令行参数处理 ====================
 
@@ -33,6 +33,15 @@ if (displayResult === 'XVFB_REDIRECT') {
 /**
  * 从统一后端获取配置和函数
  */
+let backend;
+try {
+    backend = getBackend();
+} catch (err) {
+    logger.error('服务器', '配置加载失败', { error: err.message });
+    logger.error('服务器', '请先初始化配置：复制 config.example.yaml 为 config.yaml');
+    process.exit(1);
+}
+
 const {
     config,
     name: backendName,
@@ -42,7 +51,7 @@ const {
     resolveModelId,
     getModels,
     getImagePolicy
-} = getBackend();
+} = backend;
 
 /** @type {number} 服务器端口 */
 const PORT = config.server?.port || 3000;

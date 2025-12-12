@@ -4,10 +4,10 @@
  */
 
 import crypto from 'crypto';
-import { logger } from '../utils/logger.js';
-import { ERROR_CODES } from './errors.js';
+import { logger } from '../../utils/logger.js';
+import { ERROR_CODES } from '../errors.js';
 import { sendJson, sendApiError } from './respond.js';
-import { parseRequest } from './parseChat.js';
+import { parseRequest } from '../parseChat.js';
 
 /**
  * 鉴权检查

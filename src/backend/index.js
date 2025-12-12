@@ -1,3 +1,13 @@
+/**
+ * @fileoverview 后端适配器入口
+ * @description 负责加载配置、准备运行目录（用户数据/临时目录），并根据配置返回“单后端”或“聚合后端”的统一接口。
+ *
+ * 对外统一能力：
+ * - `initBrowser(cfg)`
+ * - `generateImage(ctx, prompt, imagePaths, modelId, meta)`
+ * - `resolveModelId(modelKey)` / `getModels()` / `getImagePolicy(modelKey)`
+ */
+
 import fs from 'fs';
 import path from 'path';
 import { loadConfig } from '../utils/config.js';
@@ -24,14 +34,6 @@ if (!fs.existsSync(TEMP_DIR)) {
     fs.mkdirSync(TEMP_DIR, { recursive: true });
 }
 
-const config = loadConfig();
-
-// 将路径常量注入 config 对象
-config.paths = {
-    userDataDir: USER_DATA_DIR,
-    tempDir: TEMP_DIR
-};
-
 // 适配器映射表
 const ADAPTER_MAP = {
     'gemini_biz': geminiBackend,
@@ -41,26 +43,7 @@ const ADAPTER_MAP = {
     'lmarena': lmarenaBackend
 };
 
-// 1. 单一后端模式实现
-const SingleBackend = {
-    name: config.backend.type,
-
-    initBrowser: async (cfg) => {
-        const adapter = ADAPTER_MAP[cfg.backend.type] || lmarenaBackend;
-        return adapter.initBrowser(cfg);
-    },
-
-    generateImage: async (ctx, prompt, paths, modelId, meta) => {
-        const adapter = ADAPTER_MAP[config.backend.type] || lmarenaBackend;
-        return adapter.generateImage(ctx, prompt, paths, modelId, meta);
-    },
-
-    resolveModelId: (modelKey) => modelsModule.resolveModelId(config.backend.type, modelKey),
-    getModels: () => modelsModule.getModelsForBackend(config.backend.type),
-    getImagePolicy: (modelKey) => modelsModule.getImagePolicy(config.backend.type, modelKey)
-};
-
-// 2. 聚合后端模式实现
+// 2. 聚合后端模式实现（跨调用复用全局 Page）
 const MergedBackend = {
     name: 'merge',
     _globalBrowser: null,
@@ -113,12 +96,11 @@ const MergedBackend = {
 
         logger.info('适配器', `[后端聚合] 路由至: ${adapterType}, Model: ${realId}`, meta);
 
-        // 构造子上下文：复用全局 Page，但传入全局 Config
-        // 适配器会从 config.backend.geminiBiz 等字段读取所需配置
+        // 构造子上下文：复用全局 Page，但传入当前 config（适配器会读取 config.backend.geminiBiz 等字段）
         const subContext = {
             ...ctx,
             page: MergedBackend._globalPage,
-            config: config
+            config: cfg
         };
 
         return adapter.generateImage(subContext, prompt, paths, realId, meta);
@@ -206,6 +188,33 @@ const MergedBackend = {
 };
 
 export function getBackend() {
+    const config = loadConfig();
+
+    // 将路径常量注入 config 对象
+    config.paths = {
+        userDataDir: USER_DATA_DIR,
+        tempDir: TEMP_DIR
+    };
+
+    // 单一后端模式实现（基于当前配置构建）
+    const SingleBackend = {
+        name: config.backend.type,
+
+        initBrowser: async (cfg) => {
+            const adapter = ADAPTER_MAP[cfg.backend.type] || lmarenaBackend;
+            return adapter.initBrowser(cfg);
+        },
+
+        generateImage: async (ctx, prompt, paths, modelId, meta) => {
+            const adapter = ADAPTER_MAP[config.backend.type] || lmarenaBackend;
+            return adapter.generateImage(ctx, prompt, paths, modelId, meta);
+        },
+
+        resolveModelId: (modelKey) => modelsModule.resolveModelId(config.backend.type, modelKey),
+        getModels: () => modelsModule.getModelsForBackend(config.backend.type),
+        getImagePolicy: (modelKey) => modelsModule.getImagePolicy(config.backend.type, modelKey)
+    };
+
     const isMerge = config.backend.merge && config.backend.merge.enable;
     const activeBackend = isMerge ? MergedBackend : SingleBackend;
 

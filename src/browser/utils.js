@@ -1,3 +1,18 @@
+/**
+ * @fileoverview 浏览器自动化工具函数
+ * @description 封装 Playwright 页面常用操作（等待、查找、点击、上传、拟人化行为等），供后端适配器复用。
+ *
+ * 主要函数：
+ * - `random` / `sleep`：随机与延迟工具
+ * - `getMimeType`：根据文件扩展名推断 MIME
+ * - `getRealViewport` / `clamp`：视口与坐标工具（防止越界）
+ * - `queryDeep`：深层查询（包含 Shadow DOM / iframe）
+ * - `safeClick` / `humanType`：拟人化点击与输入
+ * - `pasteImages` / `uploadFilesViaChooser`：图片粘贴/上传辅助
+ * - `isPageValid` / `createPageCloseWatcher`：页面有效性与关闭/崩溃监听
+ * - `getCookies`：读取 Cookies（JSON 格式）
+ */
+
 import path from 'path';
 import { logger } from '../utils/logger.js';
 
@@ -520,4 +535,3 @@ export async function getCookies(page) {
     const context = page.context();
     return await context.cookies();
 }
-

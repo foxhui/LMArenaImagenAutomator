@@ -3,7 +3,7 @@
  * @description 封装 JSON、SSE 响应和错误响应的统一处理函数
  */
 
-import { getErrorDetails } from './errors.js';
+import { getErrorDetails } from '../errors.js';
 
 /**
  * 发送 JSON 响应

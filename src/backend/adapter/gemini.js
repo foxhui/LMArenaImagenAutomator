@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Gemini（消费者版）适配器
+ * @description 通过自动化方式驱动 Gemini 网页端生成图片，并将结果转换为统一的后端返回结构。
+ */
+
 import { initBrowserBase } from '../../browser/launcher.js';
 import {
     sleep,

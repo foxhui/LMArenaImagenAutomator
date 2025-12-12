@@ -1,3 +1,10 @@
+/**
+ * @fileoverview 运行环境初始化脚本（CLI）
+ * @description 用于下载/准备运行所需依赖（如 Camoufox、better-sqlite3 等），并按需更新 `config.yaml`。
+ *
+ * 用法：`npm run init`
+ */
+
 import fs from 'fs';
 import { execSync } from 'child_process';
 import path from 'path';
@@ -6,11 +13,11 @@ import { fileURLToPath } from 'url';
 import { gotScraping } from 'got-scraping';
 import compressing from 'compressing';
 import yaml from 'yaml';
-import { logger } from './logger.js';
-import { getHttpProxy, getProxyConfig } from './proxy.js';
+import { logger } from '../src/utils/logger.js';
+import { getHttpProxy, getProxyConfig } from '../src/utils/proxy.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.join(__dirname, '..', '..');
+const PROJECT_ROOT = path.join(__dirname, '..');
 const TEMP_DIR = path.join(PROJECT_ROOT, 'data', 'temp');
 const CONFIG_PATH = path.join(PROJECT_ROOT, 'config.yaml');
 

@@ -1,32 +1,36 @@
-import { getBackend } from '../backend/index.js';
+/**
+ * @fileoverview 本地 HTTP 调用测试（CLI）
+ * @description 用交互式方式构造请求并调用本地服务的 `/v1/chat/completions`，用于快速验证服务可用性与流式输出。
+ *
+ * 用法：`npm run test`
+ */
+
 import { select, input } from '@inquirer/prompts';
 import fs from 'fs';
 import path from 'path';
 import http from 'http';
-import { logger } from './logger.js';
+import yaml from 'yaml';
 
-// 使用统一后端获取配置和函数
-const { config, name, TEMP_DIR, getModels } = getBackend();
+// 简易日志：脚本内部使用，避免引入服务端 logger 造成格式混淆
+const logger = {
+    info: (tag, msg) => console.log(`[${new Date().toLocaleTimeString()}] [INFO] [${tag}] ${msg}`),
+    warn: (tag, msg) => console.log(`[${new Date().toLocaleTimeString()}] [WARN] [${tag}] ${msg}`),
+    error: (tag, msg, meta) => console.error(`[${new Date().toLocaleTimeString()}] [ERROR] [${tag}] ${msg}`, meta || '')
+};
 
-logger.info('CLI/Test', `测试工具启动 (后端适配器: ${name})`);
-
-/**
- * 选择模型
- */
-async function selectModel() {
-    const models = getModels(); // 使用后端统一接口，支持聚合模式
-    const choices = [
-        { name: 'Skip（使用默认模型）', value: null },
-        ...models.data.map(m => ({ name: m.id, value: m.id }))
-    ];
-
-    const modelId = await select({
-        message: '选择模型',
-        choices,
-        pageSize: 15
-    });
-
-    return modelId;
+// 读取本地配置：用于获取端口与鉴权 Token（读取失败时使用默认值）
+let config = { server: { port: 3000, auth: '' } };
+try {
+    if (fs.existsSync('config.yaml')) {
+        const file = fs.readFileSync('config.yaml', 'utf8');
+        const parsed = yaml.parse(file);
+        if (parsed && parsed.server) {
+            config.server.port = parsed.server.port || 3000;
+            config.server.auth = parsed.server.auth || '';
+        }
+    }
+} catch (e) {
+    logger.warn('Test', '无法读取 config.yaml，将使用默认设置');
 }
 
 /**
@@ -56,7 +60,7 @@ async function promptForImages() {
         if (fs.existsSync(cleanPath)) {
             imagePaths.push(cleanPath);
         } else {
-            logger.warn('CLI/Test', `图片不存在: ${cleanPath}`);
+            logger.warn('Test', `图片不存在: ${cleanPath}`);
         }
     }
     return imagePaths;
@@ -64,16 +68,16 @@ async function promptForImages() {
 
 /**
  * HTTP 测试模式 - OpenAI 格式
- * @param {string} prompt - 提示词
- * @param {string|null} modelId - 模型 ID
- * @param {string[]} imagePaths - 图片路径
- * @param {boolean} isStreaming - 是否使用流式模式
  */
 async function testViaHttpOpenAI(prompt, modelId, imagePaths, isStreaming) {
-    const PORT = config.server.port || 3000;
+    const PORT = config.server.port;
     const AUTH_TOKEN = config.server.auth;
 
-    logger.info('CLI/Test', `HTTP 测试 - ${isStreaming ? '流式模式' : '非流式模式'}`);
+    if (!AUTH_TOKEN) {
+        logger.warn('Test', '警告: 未配置 API Key (server.auth)');
+    }
+
+    logger.info('Test', `HTTP 测试 - ${isStreaming ? '流式' : '非流式'} - 端口: ${PORT}`);
 
     return new Promise((resolve, reject) => {
         // 构造请求体
@@ -95,7 +99,7 @@ async function testViaHttpOpenAI(prompt, modelId, imagePaths, isStreaming) {
                     image_url: { url: `data:image/${mimeType};base64,${base64}` }
                 });
             } else {
-                logger.warn('CLI/Test', `图片不存在，已跳过: ${imgPath}`);
+                logger.warn('Test', `图片不存在，已跳过: ${imgPath}`);
             }
         }
 
@@ -104,7 +108,7 @@ async function testViaHttpOpenAI(prompt, modelId, imagePaths, isStreaming) {
         const body = {
             messages,
             stream: isStreaming,
-            ...(modelId && { model: modelId })
+            model: modelId || 'default'
         };
 
         const bodyStr = JSON.stringify(body);
@@ -195,83 +199,36 @@ async function testViaHttpOpenAI(prompt, modelId, imagePaths, isStreaming) {
 }
 
 /**
- * 保存图片
- */
-function saveImage(base64Data) {
-    const testSaveDir = path.join(TEMP_DIR, 'testSave');
-    if (!fs.existsSync(testSaveDir)) {
-        fs.mkdirSync(testSaveDir, { recursive: true });
-    }
-
-    const timestamp = Date.now();
-    const savePath = path.join(testSaveDir, `test_${timestamp}.png`);
-
-    // 移除 Data URI 前缀（如果有）
-    const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
-    fs.writeFileSync(savePath, Buffer.from(cleanBase64, 'base64'));
-
-    logger.info('CLI/Test', `图片已保存: ${savePath}`);
-    return savePath;
-}
-
-/**
  * 主流程
  */
 (async () => {
     try {
-        logger.info('CLI/Test', '=== HTTP 服务器测试 ===');
-        logger.info('CLI/Test', '请确保服务器已启动 (npm start)');
+        logger.info('Test', '=== API 独立测试脚本 ===');
 
-        // 1. 选择模型
-        const modelId = await selectModel();
-        if (modelId) {
-            logger.info('CLI/Test', `选择模型: ${modelId}`);
-        } else {
-            logger.info('CLI/Test', '跳过模型选择，使用默认');
-        }
-
-        // 2. 输入提示词
+        // 1. 输入提示词
         const prompt = await promptForInput();
-        logger.info('CLI/Test', `提示词: ${prompt}`);
 
-        // 3. 输入图片路径
+        // 2. 输入图片路径
         const imagePaths = await promptForImages();
-        if (imagePaths.length > 0) {
-            logger.info('CLI/Test', `参考图片: ${imagePaths.join(', ')}`);
-        }
 
-        // 4. 选择流式模式
+        // 3. 选择流式模式
         const isStreaming = await select({
             message: '选择请求模式',
             choices: [
-                { name: '流式 (stream: true) - 实时输出，支持心跳保活', value: true },
-                { name: '非流式 (stream: false) - 等待完整响应', value: false }
+                { name: '流式 (stream: true)', value: true },
+                { name: '非流式 (stream: false)', value: false }
             ]
         });
 
-        // 5. 执行测试
-        logger.info('CLI/Test', '正在发送请求...');
-        const result = await testViaHttpOpenAI(prompt, modelId, imagePaths, isStreaming);
+        // 4. 执行测试
+        logger.info('Test', '正在发送请求...');
+        await testViaHttpOpenAI(prompt, null, imagePaths, isStreaming);
 
-        // 5. 处理响应
-        if (result.choices) {
-            const content = result.choices[0].message.content;
-            logger.info('CLI/Test', `响应内容: ${content.slice(0, 100)}...`);
-
-            // 提取图片（如果有）
-            const match = content.match(/!\[.*?\]\((data:image\/[^)]+)\)/);
-            if (match) {
-                saveImage(match[1]);
-            } else {
-                logger.info('CLI/Test', `文本回复: ${content}`);
-            }
-        }
-
-        logger.info('CLI/Test', '测试完成');
+        logger.info('Test', '测试完成');
         process.exit(0);
 
     } catch (err) {
-        logger.error('CLI/Test', '测试失败', { error: err.message });
+        logger.error('Test', '测试失败', { error: err.message });
         process.exit(1);
     }
 })();

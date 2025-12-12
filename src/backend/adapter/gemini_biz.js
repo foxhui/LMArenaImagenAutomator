@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Gemini Business 适配器
+ * @description 通过自动化方式驱动 Gemini Business 网页端生成图片，并将结果转换为统一的后端返回结构。
+ */
+
 import { initBrowserBase } from '../../browser/launcher.js';
 import {
     sleep,
@@ -19,7 +24,7 @@ const INPUT_SELECTOR = 'ucs-prosemirror-editor .ProseMirror';
 
 /**
  * 处理账户选择页面跳转
- * @param {import('puppeteer').Page} page
+ * @param {import('playwright-core').Page} page - Playwright 页面对象
  * @param {string} targetUrl - 目标 URL，用于判断跳转完成
  * @returns {Promise<boolean>} 是否处理了跳转
  */
@@ -349,4 +354,3 @@ async function generateImage(context, prompt, imgPaths, modelId, meta = {}) {
 }
 
 export { initBrowser, generateImage, handleAccountChooser };
-

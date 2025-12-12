@@ -1,7 +1,12 @@
+/**
+ * @fileoverview 代理适配模块
+ * @description 将配置中的 HTTP/SOCKS5 代理转换为 Playwright 可用的代理配置，并在需要时通过 proxy-chain 搭建本地 HTTP 代理桥接。
+ */
+
 import { anonymizeProxy, closeAnonymizedProxy } from 'proxy-chain';
 import { logger } from './logger.js';
 
-// 全局代理状态追踪
+// 全局代理状态：用于清理 proxy-chain 创建的本地代理资源
 const proxyState = {
     anonymizedProxyUrl: null,  // 转换后的 HTTP 代理地址
     originalProxyUrl: null      // 原始代理地址

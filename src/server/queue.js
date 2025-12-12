@@ -12,7 +12,7 @@ import {
     sendApiError,
     buildChatCompletion,
     buildChatCompletionChunk
-} from './respond.js';
+} from './http/respond.js';
 
 /**
  * @typedef {object} TaskContext

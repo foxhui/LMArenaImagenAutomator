@@ -1,11 +1,13 @@
 /**
- * 适配器公共流程函数
- * 
- * - fillPrompt: 填写提示词
- * - submit: 提交表单（带回退逻辑）
- * - waitApiResponse: 等待 API 响应（含页面监听）
- * - normalizePageError: 页面错误处理
- * - normalizeHttpError: HTTP 错误处理
+ * @fileoverview 后端适配器公共流程
+ * @description 提供各适配器复用的通用页面操作与错误归一化能力。
+ *
+ * 主要函数：
+ * - `fillPrompt`：拟人化输入提示词
+ * - `submit`：提交表单（点击按钮失败则回退为回车）
+ * - `waitApiResponse`：等待匹配的 API 响应（包含页面关闭/崩溃监听）
+ * - `normalizePageError`：将页面级异常归一化为可返回给服务器层的错误
+ * - `normalizeHttpError`：将 HTTP 响应错误（含限流/人机验证）归一化
  */
 
 import { sleep, humanType, safeClick, isPageValid, createPageCloseWatcher, getRealViewport, clamp, random } from '../browser/utils.js';
@@ -267,4 +269,3 @@ export async function downloadImage(url, config) {
         return { error: `已获取结果，但图片下载时遇到错误: ${e.message}` };
     }
 }
-

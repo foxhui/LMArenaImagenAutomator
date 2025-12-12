@@ -1,3 +1,12 @@
+/**
+ * @fileoverview 浏览器启动与生命周期管理
+ * @description 负责启动 Camoufox（Playwright 内核）、注入指纹与代理、创建/复用页面，并在进程退出时做资源清理。
+ *
+ * 约定：
+ * - 登录模式会尽量保留 Profile（用户数据目录）
+ * - 清理采用三级退出：Playwright close -> SIGTERM -> SIGKILL
+ */
+
 import { Camoufox } from 'camoufox-js';
 import { FingerprintGenerator } from 'fingerprint-generator';
 import fs from 'fs';
@@ -8,7 +17,7 @@ import { getRealViewport, clamp, random, sleep } from './utils.js';
 import { logger } from '../utils/logger.js';
 import { getBrowserProxy, cleanupProxy } from '../utils/proxy.js';
 
-// 全局状态跟踪
+// 全局状态：用于在登录模式下管理残留进程与复用上下文
 let globalBrowserProcess = null;
 let globalContext = null; // 替代 globalBrowser
 

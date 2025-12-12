@@ -1,11 +1,21 @@
-// 图片策略枚举
+/**
+ * @fileoverview 模型与图片策略映射
+ * @description 维护各后端的模型列表/别名与图片输入策略，并提供统一的解析与查询方法供服务器层使用。
+ */
+
+/**
+ * 图片输入策略枚举
+ * - optional：可带可不带（默认）
+ * - required：必须有参考图
+ * - forbidden：禁止带图
+ */
 export const IMAGE_POLICY = {
     OPTIONAL: 'optional',   // 可带可不带（默认）
     REQUIRED: 'required',   // 必须有参考图
     FORBIDDEN: 'forbidden'  // 禁止带图
 };
 
-// LMArena 后端模型配置
+/** LMArena 后端模型配置（modelKey -> 上游 codeName + 图片策略） */
 export const LMARENA_MODELS = {
     "gemini-3-pro-image-preview-2k": {
         codeName: "019abc10-e78d-7932-b725-7f1563ed8a12",
@@ -141,21 +151,21 @@ export const LMARENA_MODELS = {
     }
 };
 
-// Gemini Biz 后端模型配置
+/** Gemini Business 后端模型配置 */
 export const GEMINI_BIZ_MODELS = {
     "gemini-3-pro-image-preview": {
         imagePolicy: IMAGE_POLICY.OPTIONAL
     }
 };
 
-// NanoBananaFree AI 后端模型配置
+/** NanoBananaFree AI 后端模型配置 */
 export const NANOBANANAFREE_AI_MODELS = {
     "gemini-2.5-flash-image": {
         imagePolicy: IMAGE_POLICY.OPTIONAL
     }
 };
 
-// zai.is 后端模型配置
+/** zai.is 后端模型配置 */
 export const ZAI_IS_MODELS = {
     "gemini-3-pro-image-preview": {
         imagePolicy: IMAGE_POLICY.OPTIONAL
@@ -249,4 +259,3 @@ export function getImagePolicy(backendName, modelKey) {
 
     return model.imagePolicy;
 }
-

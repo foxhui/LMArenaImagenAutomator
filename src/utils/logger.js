@@ -1,3 +1,11 @@
+/**
+ * @fileoverview 控制台日志模块
+ * @description 提供带时间戳/级别/模块名的彩色日志输出，并支持通过环境变量控制日志等级。
+ *
+ * - 环境变量：LOG_LEVEL=debug|info|warn|error
+ * - 输出格式：YYYY-MM-DD HH:mm:ss.SSS [LEVEL] [模块] 消息 | k=v ...
+ */
+
 import process from 'process';
 
 const LEVELS = ['debug', 'info', 'warn', 'error'];

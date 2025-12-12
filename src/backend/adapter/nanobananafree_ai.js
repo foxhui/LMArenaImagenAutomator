@@ -1,3 +1,8 @@
+/**
+ * @fileoverview NanoBananaFree AI 适配器
+ * @description 通过自动化方式驱动 nanobananafree.ai 网页端生成图片，并将结果转换为统一的后端返回结构。
+ */
+
 import { initBrowserBase } from '../../browser/launcher.js';
 import {
     sleep,
@@ -148,4 +153,3 @@ async function generateImage(context, prompt, imgPaths, modelId, meta = {}) {
 }
 
 export { initBrowser, generateImage };
-

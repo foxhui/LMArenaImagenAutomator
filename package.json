@@ -7,9 +7,9 @@
 	"type": "module",
 	"scripts": {
 		"start": "node server.js",
-		"test": "node lib/utils/test.js",
-		"genkey": "node lib/utils/config.js -genkey",
-		"init": "node lib/utils/init.js"
+		"test": "node scripts/test.js",
+		"genkey": "node scripts/genkey.js",
+		"init": "node scripts/init.js"
 	},
 	"dependencies": {
 		"@inquirer/prompts": "^8.0.1",
