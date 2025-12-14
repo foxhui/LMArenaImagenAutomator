@@ -22,8 +22,10 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. 复制依赖并安装
+# 2. 复制依赖文件、脚本和补丁目录，然后安装
 COPY package.json pnpm-lock.yaml ./
+COPY scripts/ ./scripts/
+COPY patches/ ./patches/
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 
 # 3. 复制源码并初始化
@@ -50,9 +52,14 @@ CMD ["/bin/sh", "-c", "\
     fi; \
     \
     ARGS='-xvfb -vnc'; \
-    if [ \"$LOGIN_MODE\" = \"true\" ]; then \
-        echo '>>> ENABLED LOGIN MODE'; \
-        ARGS=\"$ARGS -login\"; \
+    if [ -n \"$LOGIN_MODE\" ]; then \
+        if [ \"$LOGIN_MODE\" = \"true\" ]; then \
+            echo '>>> ENABLED LOGIN MODE'; \
+            ARGS=\"$ARGS -login\"; \
+        else \
+            echo \">>> ENABLED LOGIN MODE for worker: $LOGIN_MODE\"; \
+            ARGS=\"$ARGS -login:$LOGIN_MODE\"; \
+        fi; \
     fi; \
     \
     echo \">>> Starting application with args: $ARGS\"; \

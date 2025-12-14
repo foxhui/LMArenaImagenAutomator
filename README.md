@@ -54,7 +54,7 @@ LMArenaImagenAutomator 是一个基于 Playwright + Camoufox 的自动化图像�
 
 ### 🐳 方式二：Docker 部署
 
-> ⚠️ **特别说明**：首次运行需设置 `LOGIN_MODE=true`，并通过 VNC 客户端连接 `localhost:5900` 完成网页登录验证。
+> ⚠️ **特别说明**：首次运行需设置 `LOGIN_MODE=true`（true可以改为workerName），并通过 VNC 客户端连接 `localhost:5900` 完成网页登录验证。
 
 **Docker CLI**
 ```bash

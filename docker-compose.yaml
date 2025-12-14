@@ -11,8 +11,9 @@ services:
       - ./data:/app/data
     environment:
       - DISPLAY=:99
-      # true: 登录模式 (用VNC连上去登录)
       # false: 标准挂机模式
+      # true: 登录第一个 worker
+      # workerName: 只登录指定的 worker
       - LOGIN_MODE=false
     shm_size: '2gb'
     init: true
