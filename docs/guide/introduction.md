@@ -14,5 +14,6 @@
 | [**Nano Banana Free**](https://nanobananafree.ai/) | ❌ | ✅ |
 | [**zAI**](https://zai.is/) | ❌ | ✅ |
 | [**Google Gemini**](https://gemini.google.com/) | ❌ | ✅ |
+| [**ZenMux**](https://zenmux.ai/) | ✅ | ❌ | 
 
 > 未来可能会支持更多网站...
