@@ -10,6 +10,9 @@ hero:
       text: 快速开始
       link: /guide/deployment
     - theme: alt
+      text: 项目介绍
+      link: /guide/introduction
+    - theme: alt
       text: GitHub
       link: https://github.com/foxhui/WebAI2API
   image:

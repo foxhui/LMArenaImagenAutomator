@@ -11,6 +11,10 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/favicon.png' }]
   ],
 
+  ignoreDeadLinks: [
+    /^http:\/\/localhost/
+  ],
+
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
@@ -22,6 +26,7 @@ export default defineConfig({
       {
         text: '入门指南',
         items: [
+          { text: '项目介绍', link: '/guide/introduction' },
           { text: '环境要求', link: '/guide/requirements' },
           { text: '快速部署', link: '/guide/deployment' },
           { text: '首次使用', link: '/guide/first-use' }

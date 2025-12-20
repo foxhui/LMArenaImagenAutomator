@@ -53,39 +53,34 @@ npm start -- -xvfb -vnc
 
 ## Docker 部署
 
-::: warning 首次运行说明
-首次运行需通过 VNC 客户端连接 `localhost:5900` 完成网页登录验证。
+::: warning **特别说明**
+登录相关操作可以在 WebUI 的虚拟显示器板块进行，也可通过 RealVNC 等工具连接（需添加映射 VNC 端口，默认非被占用的情况下为 5900）
 :::
 
 ### Docker CLI
 
 ```bash
-docker run -d --name webai2api \
-  -p 3000:3000 -p 5900:5900 \
+docker run -d --name webai-2api \
+  -p 3000:3000 \
   -v "$(pwd)/data:/app/data" \
-  -v "$(pwd)/config.yaml:/app/config.yaml" \
-  -e LOGIN_MODE=true \
   --shm-size=2gb \
-  foxhui/lmarena-imagen-automator:latest
+  foxhui/webai-2api:latest
 ```
 
 ### Docker Compose
 
 ```yaml
-version: '3.8'
 services:
-  webai2api:
-    image: foxhui/lmarena-imagen-automator:latest
+  webai-2api:
+    image: foxhui/webai-2api:latest
+    container_name: webai-2api
+    restart: unless-stopped
     ports:
       - "3000:3000"
-      - "5900:5900"
     volumes:
       - ./data:/app/data
-      - ./config.yaml:/app/config.yaml
-    environment:
-      - LOGIN_MODE=true
-    shm_size: 2gb
-    restart: unless-stopped
+    shm_size: '2gb'
+    init: true
 ```
 
 启动服务：
