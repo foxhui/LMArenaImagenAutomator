@@ -1,12 +1,12 @@
 name: Deploy VitePress site to Pages
 
 on:
-  # 在推送到 main 分支时触发
+  # 在推送到 docs 分支时自动触发
   push:
     branches:
-      - main
+      - docs
   
-  # 允许手动触发工作流
+  # 允许手动触发工作流（main 分支可通过此方式手动部署）
   workflow_dispatch:
 
 # 设置 GITHUB_TOKEN 的权限以允许部署到 GitHub Pages
