@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   srcDir: "docs",
+  outDir: "dist",
   lang: 'zh-CN',
 
   title: "WebAI2API",
