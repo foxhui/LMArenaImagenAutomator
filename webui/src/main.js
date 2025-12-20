@@ -13,6 +13,7 @@ const routes = [
     { path: '/settings/adapters', component: () => import('@/components/settings/adapters.vue') },
     { path: '/tools/display', component: () => import('@/components/tools/display.vue') },
     { path: '/tools/cache', component: () => import('@/components/tools/cache.vue') },
+    { path: '/tools/logs', component: () => import('@/components/tools/logs.vue') },
 ];
 
 const router = createRouter({

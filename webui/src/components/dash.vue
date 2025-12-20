@@ -95,6 +95,26 @@ onUnmounted(() => {
 
 <template>
     <a-layout style="width: 100%; background: transparent;">
+        <!-- 安全模式告警横幅 -->
+        <a-alert v-if="systemStore.safeMode?.enabled" type="error" show-icon style="margin-bottom: 16px;" closable>
+            <template #message>
+                <span style="font-weight: 600;">⚠️ 安全模式</span>
+            </template>
+            <template #description>
+                <div>
+                    <p style="margin-bottom: 8px;">
+                        服务因初始化失败进入安全模式，OpenAI API 不可用。
+                    </p>
+                    <p style="margin-bottom: 8px; color: #cf1322;">
+                        <b>原因：</b>{{ systemStore.safeMode.reason }}
+                    </p>
+                    <p style="margin: 0;">
+                        请前往「系统设置」修改正确的配置后重启服务。
+                    </p>
+                </div>
+            </template>
+        </a-alert>
+
         <!-- 响应式布局：手机竖向，电脑横向 -->
         <a-row :gutter="[16, 16]" style="margin-bottom: 24px">
             <!-- 系统信息卡片 -->

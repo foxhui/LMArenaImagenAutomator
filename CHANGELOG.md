@@ -5,11 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.1] - 2025-12-20
+
+### ✨ Added
+- **WebUI**
+  - 完善 WebUI 功能，添加接口测试和日志查看器，优化部分布局
+- **日志记录**
+  - 会在 data/temp 文件夹下记录日志（最大5MB轮转）
+
+### 🔄 Changed
+- **初始化失败逻辑**
+  - 程序初始化失败后不会直接推出，以便利用 WebUI 修改错误的配置
+- **LMArena 图片适配器**
+  - 支持通过配置直接返回图片URL (但其他不支持的适配器仍然会返回 Base64)
+
 ## [3.2.0] - 2025-12-19
 
 ### ✨ Added
 - **WebUI**
   - 为项目添加了网页版管理工具，便于修改配置文件（可能会有问题，可随时反馈）
+
+- **增加看门狗**
+  - 增加看门狗机制（Supervisor），保证程序失败重载和利于利用 WebUI 完整重启程序
+  - 同时将 Linux 上的虚拟显示器和 VNC 服务器启动程序也迁移至看门狗机制
 
 ## [3.1.0] - 2025-12-17
 

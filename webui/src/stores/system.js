@@ -16,6 +16,12 @@ export const useSystemStore = defineStore('system', {
             free: 0
         },
 
+        // 安全模式状态
+        safeMode: {
+            enabled: false,
+            reason: null
+        },
+
         // 仪表盘统计信息
         stats: {
             totalRequests: 0,

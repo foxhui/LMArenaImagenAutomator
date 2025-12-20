@@ -101,6 +101,16 @@ const queueManager = createQueueManager(
  */
 const isLoginMode = process.argv.some(arg => arg.startsWith('-login'));
 
+/**
+ * 安全模式状态
+ * 当 Pool 初始化失败时进入安全模式，此时：
+ * - HTTP 服务器正常启动
+ * - Admin API 和 WebUI 可用
+ * - OpenAI API 返回 503
+ */
+let safeMode = false;
+let safeModeReason = null;
+
 const handleRequest = createGlobalRouter({
     authToken: AUTH_TOKEN,
     backendName,
@@ -112,7 +122,8 @@ const handleRequest = createGlobalRouter({
     imageLimit: IMAGE_LIMIT,
     queueManager,
     config,
-    loginMode: isLoginMode
+    loginMode: isLoginMode,
+    getSafeMode: () => ({ enabled: safeMode, reason: safeModeReason })
 });
 
 // ==================== 启动服务器 ====================
@@ -128,12 +139,15 @@ async function startServer() {
         logger.info('服务器', '完成后可直接关闭浏览器窗口或按 Ctrl+C 退出');
     }
 
-    // 预先启动 Pool
+    // 预先启动工作池（失败时进入安全模式）
     try {
         await queueManager.initializePool();
     } catch (err) {
-        logger.error('服务器', 'Pool 初始化失败', { error: err.message });
-        process.exit(1);
+        logger.error('服务器', '工作池初始化失败', { error: err.message });
+        logger.warn('服务器', '进入安全模式：WebUI 和 Admin API 可用，OpenAI API 不可用');
+        logger.warn('服务器', '请通过 配置文件或者 WebUI 修改正确的配置后重启服务');
+        safeMode = true;
+        safeModeReason = err.message;
     }
 
     // 创建并启动 HTTP 服务器

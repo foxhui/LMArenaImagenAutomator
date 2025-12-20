@@ -136,6 +136,13 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         // 9. 提取图片 URL
         const img = extractImage(content);
         if (img) {
+            // 检查是否配置了返回 URL
+            const returnUrl = config?.backend?.adapter?.lmarena?.returnUrl || false;
+            if (returnUrl) {
+                logger.info('适配器', '已获取结果，返回 URL', meta);
+                return { image: img };
+            }
+
             logger.info('适配器', '已获取结果，正在下载图片...', meta);
             const result = await downloadImage(img, context);
             if (result.image) {
@@ -169,6 +176,17 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
 export const manifest = {
     id: 'lmarena',
     displayName: 'LMArena',
+
+    // 配置项模式
+    configSchema: [
+        {
+            key: 'returnUrl',
+            label: '返回图片 URL',
+            type: 'boolean',
+            default: false,
+            note: '开启后直接返回图片 URL (但其他不支持的适配器仍然会返回 Base64)'
+        }
+    ],
 
     // 入口 URL
     getTargetUrl(config, workerConfig) {

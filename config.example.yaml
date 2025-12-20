@@ -114,6 +114,10 @@ backend:
       # 入口URL
       # 示例: "https://business.gemini.google/home/cid/8888a888-b6e0-88be-86e1-888cf3ee8cf4"
       entryUrl: ""
+    # Lmarena 配置
+    lmarena:
+      # 开启后直接返回图片 URL (但其他不支持的适配器仍然会返回 Base64)
+      returnUrl: false
       
 
 queue:

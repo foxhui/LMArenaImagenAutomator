@@ -59,7 +59,7 @@ async function readBody(req) {
  * @returns {Function} Admin 路由处理函数
  */
 export function createAdminRouter(context) {
-    const { config, queueManager, tempDir } = context;
+    const { config, queueManager, tempDir, getSafeMode } = context;
 
     /**
      * Admin 路由处理函数
@@ -76,7 +76,8 @@ export function createAdminRouter(context) {
             // GET /admin/status - 系统状态
             if (method === 'GET' && pathname === '/status') {
                 const status = getSystemStatus();
-                sendJson(res, 200, status);
+                const safeMode = getSafeMode?.() || { enabled: false, reason: null };
+                sendJson(res, 200, { ...status, safeMode });
                 return;
             }
 
@@ -172,6 +173,27 @@ export function createAdminRouter(context) {
             if (method === 'POST' && pathname === '/cache/clear') {
                 const result = clearTempFiles(tempDir);
                 sendJson(res, 200, { success: true, cleaned: result.cleaned });
+                return;
+            }
+
+            // GET /admin/logs - 读取系统日志
+            if (method === 'GET' && pathname === '/logs') {
+                const url = new URL(req.url, `http://${req.headers.host}`);
+                const lines = parseInt(url.searchParams.get('lines') || '200', 10);
+                const result = logger.readLogs(lines);
+                sendJson(res, 200, result);
+                return;
+            }
+
+            // DELETE /admin/logs - 清除系统日志
+            if (method === 'DELETE' && pathname === '/logs') {
+                const success = logger.clearLogs();
+                if (success) {
+                    logger.info('管理器', '系统日志已清除');
+                    sendJson(res, 200, { success: true, message: '日志已清除' });
+                } else {
+                    sendJson(res, 500, { success: false, message: '日志清除失败' });
+                }
                 return;
             }
 

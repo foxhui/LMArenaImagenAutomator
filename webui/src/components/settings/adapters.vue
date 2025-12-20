@@ -69,13 +69,16 @@ const handleSave = async () => {
             <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }" :data-source="adapters">
                 <template #renderItem="{ item }">
                     <a-list-item>
-                        <a-card hoverable @click="handleEdit(item)" :bodyStyle="{ padding: '16px' }">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center;">
-                                    <AppstoreOutlined style="font-size: 20px; color: #1890ff; margin-right: 12px;" />
-                                    <span style="font-weight: 600; font-size: 15px;">{{ item.id }}</span>
+                        <a-card hoverable @click="handleEdit(item)" :bodyStyle="{ padding: '12px 16px' }">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                <div style="display: flex; align-items: center; min-width: 0; flex: 1;">
+                                    <AppstoreOutlined
+                                        style="font-size: 18px; color: #1890ff; margin-right: 8px; flex-shrink: 0;" />
+                                    <span
+                                        style="font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{
+                                        item.id }}</span>
                                 </div>
-                                <SettingOutlined style="font-size: 16px; color: #8c8c8c;" />
+                                <SettingOutlined style="font-size: 16px; color: #8c8c8c; flex-shrink: 0;" />
                             </div>
                         </a-card>
                     </a-list-item>
@@ -84,8 +87,8 @@ const handleSave = async () => {
         </a-card>
 
         <!-- 配置抽屉 -->
-        <a-drawer v-if="currentAdapter" v-model:open="drawerVisible" :title="`配置适配器 - ${currentAdapter.name}`"
-            width="500" placement="right">
+        <a-drawer v-if="currentAdapter" v-model:open="drawerVisible" :title="`配置适配器 - ${currentAdapter.id}`" width="500"
+            placement="right">
             <div v-if="!currentAdapter.configSchema || currentAdapter.configSchema.length === 0">
                 <a-empty description="该适配器没有可配置项" />
             </div>

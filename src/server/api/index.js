@@ -36,14 +36,14 @@ const WEBUI_DIR = path.join(process.cwd(), 'webui', 'dist');
  * @returns {Function} 请求处理函数
  */
 export function createGlobalRouter(context) {
-    const { authToken, config, queueManager, tempDir, loginMode } = context;
+    const { authToken, config, queueManager, tempDir, loginMode, getSafeMode } = context;
 
     // 创建鉴权中间件
     const checkAuth = createAuthMiddleware(authToken);
 
     // 创建子路由处理器
     const handleOpenAIRequest = loginMode ? null : createOpenAIRouter(context);
-    const handleAdminRequest = createAdminRouter({ config, queueManager, tempDir });
+    const handleAdminRequest = createAdminRouter({ config, queueManager, tempDir, getSafeMode });
 
     /**
      * 主路由处理函数
@@ -100,6 +100,18 @@ export function createGlobalRouter(context) {
 
         // OpenAI API (/v1)
         if (pathname.startsWith('/v1')) {
+            // 安全模式下禁用 OpenAI API
+            const safeMode = getSafeMode?.();
+            if (safeMode?.enabled) {
+                res.writeHead(503, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    error: {
+                        message: `服务运行在安全模式，OpenAI API 不可用。原因: ${safeMode.reason}`,
+                        type: 'service_unavailable'
+                    }
+                }));
+                return;
+            }
             // 登录模式下禁用 OpenAI API
             if (!handleOpenAIRequest) {
                 res.writeHead(503, { 'Content-Type': 'application/json' });
