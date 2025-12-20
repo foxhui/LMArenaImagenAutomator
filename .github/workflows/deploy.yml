@@ -1,4 +1,4 @@
-name: Deploy VitePress site to Pages
+name: Deploy VitePress to GHPages
 
 on:
   # 在推送到 docs 分支时自动触发
