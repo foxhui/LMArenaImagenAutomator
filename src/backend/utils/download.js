@@ -4,76 +4,29 @@
  */
 
 /**
- * 下载图片并转换为 Base64
+ * 使用页面上下文下载图片并转换为 Base64
+ * 自动继承页面的 Cookie 和 Session，解决鉴权问题
  * @param {string} url - 图片 URL
- * @param {object} context - 上下文对象，包含 proxyConfig 和 userDataDir
+ * @param {import('playwright-core').Page} page - Playwright 页面对象
+ * @param {object} [options] - 可选配置
+ * @param {number} [options.timeout=60000] - 超时时间（毫秒）
  * @returns {Promise<{ image?: string, error?: string }>} 下载结果
  */
-export async function downloadImage(url, context = {}) {
-    // 动态导入依赖
-    const { gotScraping } = await import('got-scraping');
-    const fs = await import('fs');
-    const path = await import('path');
-    const { getHttpProxy } = await import('../../utils/proxy.js');
-
-    const { proxyConfig = null, userDataDir } = context;
+export async function useContextDownload(url, page, options = {}) {
+    const { timeout = 60000 } = options;
 
     try {
-        // 读取指纹文件获取浏览器信息
-        let fingerprintPath = userDataDir
-            ? path.join(userDataDir, 'fingerprint.json')
-            : path.join(process.cwd(), 'data', 'camoufoxUserData', 'fingerprint.json');
+        const response = await page.request.get(url, { timeout });
 
-        let browserName = 'firefox';
-        let browserMinVersion = 100;
-        let os = 'windows';
-        let locale = 'en-US';
-
-        if (fs.existsSync(fingerprintPath)) {
-            try {
-                const fingerprint = JSON.parse(fs.readFileSync(fingerprintPath, 'utf8'));
-                if (fingerprint.navigator?.userAgent) {
-                    const versionMatch = fingerprint.navigator.userAgent.match(/Firefox\/(\d+)/i);
-                    if (versionMatch) {
-                        browserMinVersion = parseInt(versionMatch[1], 10);
-                    }
-                }
-                if (fingerprint.navigator?.platform) {
-                    const platform = fingerprint.navigator.platform.toLowerCase();
-                    if (platform.includes('win')) os = 'windows';
-                    else if (platform.includes('mac')) os = 'macos';
-                    else if (platform.includes('linux')) os = 'linux';
-                }
-                if (fingerprint.navigator?.language) {
-                    locale = fingerprint.navigator.language;
-                }
-            } catch (e) {
-                // 解析失败使用默认值
-            }
+        if (!response.ok()) {
+            return { error: `下载失败: HTTP ${response.status()}` };
         }
 
-        const proxyUrl = await getHttpProxy(proxyConfig);
-
-        const options = {
-            url,
-            responseType: 'buffer',
-            http2: true,
-            headerGeneratorOptions: {
-                browsers: [{ name: browserName, minVersion: browserMinVersion }],
-                devices: ['desktop'],
-                locales: [locale],
-                operatingSystems: [os],
-            }
-        };
-
-        if (proxyUrl) {
-            options.proxyUrl = proxyUrl;
-        }
-
-        const response = await gotScraping(options);
-        const base64 = response.body.toString('base64');
-        const contentType = response.headers['content-type'] || 'image/png';
+        const buffer = await response.body();
+        const base64 = buffer.toString('base64');
+        const contentType = response.headers()['content-type'] || 'image/png';
         const mimeType = contentType.split(';')[0].trim();
+
         return { image: `data:${mimeType};base64,${base64}` };
     } catch (e) {
         return { error: `已获取结果，但图片下载时遇到错误: ${e.message}` };

@@ -1,5 +1,5 @@
 /**
- * @fileoverview zAI（zai.is）适配器
+ * @fileoverview zAI 图片生成适配器
  */
 
 import {
@@ -14,7 +14,7 @@ import {
     normalizeHttpError,
     waitApiResponse,
     moveMouseAway,
-    downloadImage,
+    useContextDownload,
     waitForPageAuth,
     lockPageAuth,
     unlockPageAuth,
@@ -320,7 +320,7 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         logger.info('适配器', `已提取图片链接: ${imageUrl}`, meta);
 
         // 下载图片
-        const downloadResult = await downloadImage(imageUrl, context);
+        const downloadResult = await useContextDownload(imageUrl, page);
         if (downloadResult.error) {
             return downloadResult;
         }

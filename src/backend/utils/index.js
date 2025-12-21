@@ -19,7 +19,7 @@
  *   - normalizeError: 通用错误归一化
  * 
  * - 资源下载 (download.js):
- *   - downloadImage: 下载图片并转换为 Base64
+ *   - useContextDownload: 使用页面上下文下载图片并转换为 Base64
  */
 
 // 页面交互
@@ -46,4 +46,4 @@ export {
 } from './error.js';
 
 // 资源下载
-export { downloadImage } from './download.js';
+export { useContextDownload } from './download.js';

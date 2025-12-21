@@ -1,5 +1,5 @@
 /**
- * @fileoverview Gemini Business 适配器
+ * @fileoverview Gemini Business 图片、视频生成适配器
  */
 
 import {

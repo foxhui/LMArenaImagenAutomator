@@ -1,5 +1,5 @@
 /**
- * @fileoverview Gemini（消费者版）适配器
+ * @fileoverview Google Gemini 图片、视频生成适配器
  */
 
 import {

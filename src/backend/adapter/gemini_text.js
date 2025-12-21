@@ -1,5 +1,5 @@
 /**
- * @fileoverview Gemini（消费者版）文本适配器
+ * @fileoverview Google Gemini 文本生成适配器
  */
 
 import {

@@ -1,5 +1,5 @@
 /**
- * @fileoverview LMArena 适配器
+ * @fileoverview LMArena 图片生成适配器
  */
 
 import {
@@ -13,10 +13,10 @@ import {
     waitApiResponse,
     normalizePageError,
     normalizeHttpError,
-    downloadImage,
     moveMouseAway,
     waitForInput,
-    gotoWithCheck
+    gotoWithCheck,
+    useContextDownload
 } from '../utils/index.js';
 import { logger } from '../../utils/logger.js';
 
@@ -148,7 +148,7 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
             }
 
             logger.info('适配器', '已获取结果，正在下载图片...', meta);
-            const result = await downloadImage(img, context);
+            const result = await useContextDownload(img, page);
             if (result.image) {
                 logger.info('适配器', '已下载图片，任务完成', meta);
             }

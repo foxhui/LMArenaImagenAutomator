@@ -1,3 +1,7 @@
+/**
+ * @fileoverview ZenMux 文本生成适配器
+ */
+
 import {
     sleep,
     safeClick,

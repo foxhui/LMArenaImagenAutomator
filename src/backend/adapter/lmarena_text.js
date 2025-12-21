@@ -1,5 +1,5 @@
 /**
- * @fileoverview LMArena 适配器
+ * @fileoverview LMArena 文本生成适配器
  */
 
 import {

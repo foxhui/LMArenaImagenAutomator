@@ -1,5 +1,5 @@
 /**
- * @fileoverview NanoBananaFree AI 适配器
+ * @fileoverview NanoBananaFree 图片生成适配器
  */
 
 import {

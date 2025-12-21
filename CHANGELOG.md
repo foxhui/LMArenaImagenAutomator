@@ -5,11 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.3.0] - 2025-12-20
+## [3.3.0] - 2025-12-21
 
 ### ✨ Added
 - **新增适配器**
   - 支持 Gemini 网页版文本生成
+  - 支持 ChatGPT 图片生成
+- **支持视频生成**
+  - 支持在 Gemini 网页版和 Gemini Enterprise Business 图片生成适配器中生成视频
+
+### 🔄 Changed
+- **优化图片下载方式**
+  - 让文件下载步骤直接继承浏览器上下文减少特征
 
 ## [3.3.0] - 2025-12-20
 
