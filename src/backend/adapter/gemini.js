@@ -10,9 +10,11 @@ import {
 import {
     fillPrompt,
     normalizePageError,
+    normalizeHttpError,
     moveMouseAway,
     waitForInput,
-    gotoWithCheck
+    gotoWithCheck,
+    waitApiResponse
 } from '../utils/index.js';
 import { logger } from '../../utils/logger.js';
 
@@ -81,76 +83,60 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         await safeClick(page, createImagesBtn, { bias: 'button' });
         await sleep(500, 1000);
 
-        // 6. 设置响应监听 - 等待 StreamGenerate 成功后捕获图片
-        let imageData = null;
-
-        const imagePromise = new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                cleanup();
-                reject(new Error('等待图片响应超时 (120秒)'));
-            }, 120000);
-
-            let streamGenerateSuccess = false;
-
-            const onResponse = async (response) => {
-                const url = response.url();
-
-                // 先等待 StreamGenerate 成功
-                if (!streamGenerateSuccess &&
-                    url.includes('assistant.lamda.BardFrontendService/StreamGenerate') &&
-                    response.request().method() === 'POST' &&
-                    response.status() === 200) {
-                    streamGenerateSuccess = true;
-                    logger.info('适配器', '生成请求成功，等待图片...', meta);
-                }
-
-                // StreamGenerate 成功后，捕获图片响应
-                if (streamGenerateSuccess &&
-                    url.includes('googleusercontent.com/rd-gg-dl') &&
-                    url.includes('=s1024-rj') &&
-                    response.request().method() === 'GET' &&
-                    response.status() === 200) {
-                    try {
-                        // 直接获取图片二进制数据
-                        const buffer = await response.body();
-                        const base64 = buffer.toString('base64');
-
-                        // 根据 Content-Type 确定图片格式
-                        const contentType = response.headers()['content-type'] || 'image/jpeg';
-                        imageData = `data:${contentType};base64,${base64}`;
-
-                        logger.info('适配器', '已捕获图片数据', meta);
-                        cleanup();
-                        resolve(imageData);
-                    } catch (e) {
-                        logger.warn('适配器', `捕获图片失败: ${e.message}`, meta);
-                    }
-                }
-            };
-
-            const cleanup = () => {
-                clearTimeout(timeout);
-                page.off('response', onResponse);
-            };
-
-            page.on('response', onResponse);
-        });
-
-        // 7. 点击发送
+        // 6. 点击发送
         logger.debug('适配器', '点击发送...', meta);
         await safeClick(page, sendBtnLocator, { bias: 'button' });
 
         logger.info('适配器', '等待生成结果...', meta);
 
-        // 7. 等待图片响应
-        const image = await imagePromise;
-
-        if (image) {
-            logger.info('适配器', '已获取图片，任务完成', meta);
-            return { image };
-        } else {
-            return { error: '未能获取图片' };
+        // 7. 等待 StreamGenerate API
+        let streamApiResponse;
+        try {
+            streamApiResponse = await waitApiResponse(page, {
+                urlMatch: 'assistant.lamda.BardFrontendService/StreamGenerate',
+                method: 'POST',
+                timeout: 120000,
+                meta
+            });
+        } catch (e) {
+            const pageError = normalizePageError(e, meta);
+            if (pageError) return pageError;
+            throw e;
         }
+
+        // 检查 HTTP 错误
+        const httpError = normalizeHttpError(streamApiResponse);
+        if (httpError) {
+            logger.error('适配器', `API 返回错误: ${httpError.error}`, meta);
+            return { error: `API 返回错误: ${httpError.error}` };
+        }
+
+        logger.info('适配器', '生成请求成功，等待图片...', meta);
+
+        // 8. 等待图片响应
+        let imageResponse;
+        try {
+            imageResponse = await waitApiResponse(page, {
+                urlMatch: 'googleusercontent.com/rd-gg-dl',
+                urlContains: '=s1024-rj',
+                method: 'GET',
+                timeout: 60000,
+                meta
+            });
+        } catch (e) {
+            const pageError = normalizePageError(e, meta);
+            if (pageError) return pageError;
+            throw e;
+        }
+
+        // 获取图片数据
+        const buffer = await imageResponse.body();
+        const base64 = buffer.toString('base64');
+        const contentType = imageResponse.headers()['content-type'] || 'image/jpeg';
+        const imageData = `data:${contentType};base64,${base64}`;
+
+        logger.info('适配器', '已获取图片，任务完成', meta);
+        return { image: imageData };
 
     } catch (err) {
         // 顶层错误处理

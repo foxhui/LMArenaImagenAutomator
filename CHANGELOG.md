@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2025-12-20
+
+### ✨ Added
+- **新增适配器**
+  - 支持 ZenMux 
+
+### 🔄 Changed
+- **清理历史遗留**
+  - 清除历史遗留的多余的逻辑
+
 ## [3.2.1] - 2025-12-20
 
 ### ✨ Added
@@ -108,7 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Added
 - **Docker 支持**
-  - 发布 Docker 镜像 [foxhui/lmarena-imagen-automator](https://hub.docker.com/r/foxhui/lmarena-imagen-automator).
+  - 发布 Docker 镜像
 
 ## [2.2.1] - 2025-12-12
 

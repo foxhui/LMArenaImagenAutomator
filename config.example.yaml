@@ -61,8 +61,10 @@ backend:
             #   gemini_biz
             #   gemini_biz_text
             #   gemini
+            #   gemini_text
             #   zai_is
             #   nanobananafree_ai
+            #   zenmux_ai_text
             type: lmarena              # 适配器类型
 
       # ------------------------------------------------

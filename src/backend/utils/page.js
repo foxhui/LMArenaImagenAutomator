@@ -219,12 +219,13 @@ export async function moveMouseAway(page) {
  * @param {import('playwright-core').Page} page - Playwright 页面对象
  * @param {object} options - 等待选项
  * @param {string} options.urlMatch - URL 匹配字符串
+ * @param {string|string[]} [options.urlContains] - URL 必须额外包含的字符串（可选，可以是数组）
  * @param {string} [options.method='POST'] - HTTP 方法
  * @param {number} [options.timeout=120000] - 超时时间（毫秒）
  * @returns {Promise<import('playwright-core').Response>} 响应对象
  */
 export async function waitApiResponse(page, options = {}) {
-    const { urlMatch, method = 'POST', timeout = 120000 } = options;
+    const { urlMatch, urlContains, method = 'POST', timeout = 120000 } = options;
 
     if (!isPageValid(page)) {
         throw new Error('PAGE_INVALID');
@@ -234,10 +235,22 @@ export async function waitApiResponse(page, options = {}) {
 
     try {
         const responsePromise = page.waitForResponse(
-            response =>
-                response.url().includes(urlMatch) &&
-                response.request().method() === method &&
-                (response.status() === 200 || response.status() >= 400),
+            response => {
+                const url = response.url();
+
+                // 基础匹配
+                if (!url.includes(urlMatch)) return false;
+
+                // 额外的 URL 包含检查
+                if (urlContains) {
+                    const containsArray = Array.isArray(urlContains) ? urlContains : [urlContains];
+                    if (!containsArray.every(str => url.includes(str))) return false;
+                }
+
+                // 方法和状态检查
+                return response.request().method() === method &&
+                    (response.status() === 200 || response.status() >= 400);
+            },
             { timeout }
         );
 

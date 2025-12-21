@@ -31,8 +31,8 @@
 | [**LMArena**](https://lmarena.ai/) | ✅ | ✅ |
 | [**Gemini Enterprise Business**](https://business.gemini.google/) | ✅ | ✅ | 
 | [**Nano Banana Free**](https://nanobananafree.ai/) | ❌ | ✅ | 
-| [**zAI**](https://zai.is/) | ❌ | ✅ | `gemini-exp-1206` 等 |
-| [**Google Gemini**](https://gemini.google.com/) | ❌ | ✅ | 
+| [**zAI**](https://zai.is/) | ❌ | ✅ |
+| [**Google Gemini**](https://gemini.google.com/) | ✅ | ✅ | 
 | [**ZenMux**](https://zenmux.ai/) | ✅ | ❌ | 
 
 > [!NOTE]
