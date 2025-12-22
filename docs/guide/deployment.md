@@ -11,50 +11,39 @@ git clone https://github.com/foxhui/WebAI2API.git
 cd WebAI2API
 ```
 
-### 2. 复制配置文件
+### 2. 安装依赖
 
 ```bash
-cp config.example.yaml config.yaml
-```
-
-### 3. 安装依赖
-
-```bash
-# 安装 Node.js 依赖
+# 1. 安装 NPM 依赖
 pnpm install
-
-# 初始化预编译依赖
-npm run init
+# 2. 安装浏览器等预编译依赖
+npm run init 
+# 使用代理
+# 直接使用 -proxy 可交互式输入代理配置
+npm run init -- -proxy=http://username:passwd@host:port
 ```
 
 ::: warning 注意
 `npm run init` 需要从 GitHub 下载文件，请确保网络畅通。
 :::
 
-### 4. 编辑配置
-
-编辑 `config.yaml` 文件，设置鉴权密钥等配置：
-
-```yaml
-server:
-  port: 3000
-  auth: sk-your-secret-key  # 修改为你的密钥
-```
-
-### 5. 启动服务
+### 3. 启动服务
 
 ```bash
-# 标准运行
+# 标准启动
 npm start
-
-# Linux 命令行启动
+# Linux 系统 - 虚拟显示启动
 npm start -- -xvfb -vnc
+# 登录模式 (会临时强行禁用无头模式和自动化)
+npm start -- -login (-xvfb -vnc)
 ```
 
 ## Docker 部署
 
-::: warning **特别说明**
-登录相关操作可以在 WebUI 的虚拟显示器板块进行，也可通过 RealVNC 等工具连接（需添加映射 VNC 端口，默认非被占用的情况下为 5900）
+::: warning **安全提醒**
+- Docker 镜像默认开启虚拟显示器 (Xvfb) 和 VNC 服务
+- 可通过 WebUI 的虚拟显示器板块连接
+- **WebUI 传输过程未加密, 公网环境请使用 SSH 隧道或 HTTPS**
 :::
 
 ### Docker CLI

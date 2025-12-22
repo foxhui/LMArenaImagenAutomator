@@ -1,58 +1,10 @@
 # Linux 部署
 
-在 Linux 服务器上运行 WebAI2API 的特殊配置说明。
+【Docker用户可无视】在 Linux 服务器上运行 WebAI2API 的特殊配置说明。
 
-## 显示方式选择
+## 1.安装必要依赖
 
-在 Linux 服务器上运行非无头模式时，需要配置显示环境。
-
-### 方式一：Xvfb + VNC (推荐)
-
-使用虚拟显示器运行程序，通过 VNC 远程查看。
-
-#### 使用内置命令
-
-```bash
-npm start -- -xvfb -vnc
-```
-
-这会自动：
-- 启动 Xvfb 虚拟显示器
-- 启动 x11vnc 服务器
-- 可通过 WebUI 直接查看 VNC 画面
-
-#### 手动配置
-
-如果内置命令无法满足需求：
-
-1. **启动虚拟显示器**
-
-```bash
-xvfb-run --server-num=99 --server-args="-ac -screen 0 1920x1080x24" npm start
-```
-
-2. **映射到 VNC**
-
-```bash
-x11vnc -display :99 -localhost -nopw -forever -noxdamage
-```
-
-## VNC 连接
-
-### 通过 SSH 隧道 (推荐)
-
-```bash
-# 本地终端
-ssh -L 5900:127.0.0.1:5900 root@服务器IP
-```
-
-然后使用 VNC 客户端连接 `127.0.0.1:5900`。
-
-### 通过 WebUI
-
-服务启动后，访问 WebUI 的「VNC 显示」页面即可直接查看。
-
-### 安装依赖
+Linux 命令行模式下必要的依赖，他们可以让你在没有图形桌面的 Linux 环境下运行图形化应用。
 
 ### Ubuntu/Debian
 
@@ -73,9 +25,42 @@ sudo yum install xorg-x11-server-Xvfb x11vnc
 sudo pacman -S xorg-server-xvfb x11vnc
 ```
 
-### 方式二：X11 转发
+## 2.运行程序
 
-适用于通过 SSH 连接服务器的场景。
+使用虚拟显示器运行程序，通过 VNC 远程查看。(程序会帮你处理好一切)
+
+```bash
+npm start -- -xvfb -vnc
+```
+
+这会自动：
+- 启动 Xvfb 虚拟显示器
+- 启动 x11vnc 服务器
+- 可通过 WebUI 直接查看 VNC 画面
+
+## 3.连接程序
+
+### 通过 WebUI (推荐)
+
+服务启动后，访问 WebUI 的「VNC 显示」页面即可直接查看。
+
+### 通过 SSH 隧道
+
+::: tip 小贴士
+实际运行不一定是5900端口，程序会自动在 5900-5999 中寻找可用的 VNC 端口
+:::
+
+```bash
+# 本地终端
+ssh -L 5900:127.0.0.1:5900 root@服务器IP
+```
+
+然后使用 VNC 客户端连接 `127.0.0.1:5900`。
+
+
+## 额外方式：终端 X11 转发
+
+不推荐该方式，除非你愿意自己配置运行环境。
 
 1. 在本地安装 X Server（如 VcXsrv、Xming）
 2. 使用支持 X11 转发的终端（如 WindTerm）
@@ -84,21 +69,6 @@ sudo pacman -S xorg-server-xvfb x11vnc
 ```bash
 ssh -X user@server
 ```
-
-## Docker 部署
-
-Docker 镜像已内置 Xvfb 和 VNC 支持：
-
-```bash
-docker run -d --name webai2api \
-  -p 3000:3000 -p 5900:5900 \
-  -v "$(pwd)/data:/app/data" \
-  -e LOGIN_MODE=true \
-  --shm-size=2gb \
-  foxhui/lmarena-imagen-automator:latest
-```
-
-通过 VNC 客户端连接 `localhost:5900` 完成登录。
 
 ## 常见问题
 
@@ -109,3 +79,7 @@ docker run -d --name webai2api \
 ### 显示号冲突
 
 Xvfb 会自动从 50 开始查找可用的显示号，避免与现有 X 服务器冲突。
+
+### 无法连接至 VNC
+
+请检查依赖是否被安装成功。

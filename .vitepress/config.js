@@ -10,7 +10,7 @@ export default defineConfig({
   description: "网页版 AI 服务转 OpenAI 兼容 API",
 
   head: [
-    ['link', { rel: 'icon', href: '/favicon.png' }]
+    ['link', { rel: 'icon', href: '/WebAI2API/favicon.png' }]
   ],
 
   ignoreDeadLinks: [

@@ -20,11 +20,15 @@
 ::: tip 实测环境表现
 **获取完整模型列表**: 通过 `GET /v1/models` 接口查看当前配置下所有可用模型及其详细信息。
 
-✅目前支持；❌目前不支持，但未来可能会支持；🚫网站不支持，是否在支持看网站具体情况；
+✅目前支持；❌目前不支持，但未来可能会支持；🚫网站不支持, 未来是否在支持看网站具体情况；
 :::
 
 ## 项目截图
 
 ![Image](https://github.com/user-attachments/assets/296a518e-c42b-4e39-8ff6-9b4381ed4f6e)
 
-![Image](https://github.com/user-attachments/assets/06f31024-ecd4-48d2-9789-eedc98c9c5b9)
+![Image](https://github.com/user-attachments/assets/bfa30ece-6947-4f18-b2c9-ccc8087b7e89) 
+
+![Image](https://github.com/user-attachments/assets/5b15ebd2-7593-4f0e-8561-83d6ba5d88ab) 
+
+![Image](https://github.com/user-attachments/assets/53deea29-4071-4a07-8a61-211761c5f2f7) 

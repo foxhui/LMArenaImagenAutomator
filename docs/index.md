@@ -22,9 +22,9 @@ features:
   - icon: 🤖
     title: 拟人交互
     details: 模拟人类打字与鼠标轨迹，通过特征伪装规避自动化检测
-  - icon: 🔄
-    title: 接口兼容
-    details: 提供标准 OpenAI 格式接口，支持流式响应与心跳保活
+  - icon: 🎨
+    title: 网页管理
+    details: 提供可视化管理界面, 支持实时日志查看、VNC 连接、适配器管理等
   - icon: 🚀
     title: 并发隔离
     details: 支持多窗口并发执行，实现多账号浏览器实例级数据隔离

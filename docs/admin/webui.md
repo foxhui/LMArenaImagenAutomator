@@ -12,7 +12,7 @@ WebUI 以及管理接口仅在握手阶段使用 API Token 验证，传输阶段
 http://localhost:3000
 ```
 
-首次访问需要输入配置文件中设置的 API Token 进行认证。
+首次访问需要输入配置文件中设置的 API Token 进行认证，API Token 即配置文件中`auth`所配置的鉴权密钥。
 
 ## 功能模块
 
