@@ -16,11 +16,27 @@ import {
     useContextDownload
 } from '../utils/index.js';
 import { logger } from '../../utils/logger.js';
+import sharp from 'sharp';
 
 // --- 配置常量 ---
 const TARGET_URL = 'https://labs.google/fx/zh/tools/flow';
 
-
+/**
+ * 根据图片路径检测其宽高比，返回 '16:9' 或 '9:16'
+ * @param {string} imgPath - 图片路径
+ * @returns {Promise<string>} 尺寸比例
+ */
+async function detectImageAspect(imgPath) {
+    try {
+        const metadata = await sharp(imgPath).metadata();
+        const { width, height } = metadata;
+        // 宽 >= 高 为横版，否则为竖版
+        return width >= height ? '16:9' : '9:16';
+    } catch (e) {
+        // 检测失败默认横版
+        return '16:9';
+    }
+}
 
 /**
  * 执行图片生成任务
@@ -36,7 +52,16 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
 
     // 获取模型配置
     const modelConfig = manifest.models.find(m => m.id === modelId) || manifest.models[0];
-    const { codeName, imageSize } = modelConfig;
+    let { codeName, imageSize } = modelConfig;
+
+    // 如果 imageSize 为 '0'，根据第一张图片动态决定尺寸
+    if (imageSize === '0' && imgPaths && imgPaths.length > 0) {
+        imageSize = await detectImageAspect(imgPaths[0]);
+        logger.info('适配器', `根据图片检测尺寸: ${imageSize}`, meta);
+    } else if (imageSize === '0') {
+        // 没有图片时默认横版
+        imageSize = '16:9';
+    }
 
     try {
         // 1. 导航到入口页面
@@ -51,11 +76,19 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         await safeClick(page, addProjectBtn, { bias: 'button' });
         await sleep(1000, 1500);
 
-        // 3. 选择 Images 模式
-        logger.debug('适配器', '选择 Images 模式...', meta);
-        const imageRadio = page.getByRole('radio', { name: 'image Images' });
-        await imageRadio.waitFor({ state: 'visible', timeout: 10000 });
-        await safeClick(page, imageRadio, { bias: 'button' });
+        // 3. 选择 Images 模式 (通过 combobox + option 选择)
+        logger.debug('适配器', '选择图片制作模式...', meta);
+        const modeCombo = page.getByRole('combobox').filter({
+            has: page.locator('i', { hasText: 'arrow_drop_down' })
+        });
+        await modeCombo.first().waitFor({ state: 'visible', timeout: 10000 });
+        await safeClick(page, modeCombo.first(), { bias: 'button' });
+        await sleep(500, 800);
+
+        const imageOption = page.getByRole('option').filter({
+            has: page.locator('i', { hasText: 'add_photo_alternate' })
+        });
+        await safeClick(page, imageOption.first(), { bias: 'button' });
         await sleep(1000, 1500);
 
         // 4. 打开 Tune 菜单进行配置
@@ -65,71 +98,49 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         await safeClick(page, tuneBtn, { bias: 'button' });
         await sleep(800, 1200);
 
-        // 获取所有 combobox
-        const allComboboxes = page.getByRole('combobox');
-        const comboboxCount = await allComboboxes.count();
-        logger.debug('适配器', `找到 ${comboboxCount} 个 combobox`, meta);
-
-        // 4.1 设置生成数量为 1 (排除法：找到不包含模型/尺寸关键词但包含数字1-4的 combobox)
+        // 4.1 设置生成数量为 1 (链式 filter：包含数字1-4，排除模型和尺寸关键词)
         logger.debug('适配器', '设置生成数量为 1...', meta);
-        let countFound = false;
-        for (let i = 0; i < comboboxCount; i++) {
-            const combobox = allComboboxes.nth(i);
-            const fullText = await combobox.textContent().catch(() => '');
-            logger.debug('适配器', `combobox[${i}] 完整内容: "${fullText}"`, meta);
-            // 排除模型和尺寸选择器，找到包含数字1-4但不包含其他关键词的
-            const isNotModel = !/Banana|Imagen/i.test(fullText);
-            const isNotSize = !/16:9|9:16|1:1|4:3|3:4/.test(fullText);
-            const hasNumber = /[1-4]/.test(fullText);
-            if (isNotModel && isNotSize && hasNumber) {
-                await safeClick(page, combobox, { bias: 'button' });
-                await sleep(300, 500);
-                await safeClick(page, page.getByRole('option', { name: '1' }), { bias: 'button' });
-                await sleep(300, 500);
-                logger.debug('适配器', '生成数量已设置为 1', meta);
-                countFound = true;
-                break;
-            }
-        }
-        if (!countFound) {
+        const countCombobox = page.getByRole('combobox')
+            .filter({ hasText: /[1-4]/ })
+            .filter({ hasNotText: /Banana|Imagen/i })
+            .filter({ hasNotText: /16:9|9:16|1:1|4:3|3:4/ });
+
+        if (await countCombobox.count() > 0) {
+            await safeClick(page, countCombobox.first(), { bias: 'button' });
+            await sleep(300, 500);
+            await safeClick(page, page.getByRole('option', { name: '1' }), { bias: 'button' });
+            await sleep(300, 500);
+            logger.debug('适配器', '生成数量已设置为 1', meta);
+        } else {
             logger.warn('适配器', '未找到数量选择 combobox，跳过', meta);
         }
 
         // 4.2 选择模型 (查找包含模型名称的 combobox)
         logger.debug('适配器', `选择模型: ${codeName}...`, meta);
-        for (let i = 0; i < comboboxCount; i++) {
-            const combobox = allComboboxes.nth(i);
-            const text = await combobox.textContent().catch(() => '');
-            if (/Nano Banana|Imagen 4/.test(text)) {
-                await safeClick(page, combobox, { bias: 'button' });
-                await sleep(300, 500);
-                await safeClick(page, page.getByRole('option', { name: codeName }), { bias: 'button' });
-                await sleep(300, 500);
-                logger.debug('适配器', `模型已设置为 ${codeName}`, meta);
-                break;
-            }
+        const modelCombobox = page.getByRole('combobox')
+            .filter({ hasText: /Nano Banana|Imagen 4/ });
+
+        if (await modelCombobox.count() > 0) {
+            await safeClick(page, modelCombobox.first(), { bias: 'button' });
+            await sleep(300, 500);
+            await safeClick(page, page.getByRole('option', { name: codeName }), { bias: 'button' });
+            await sleep(300, 500);
+            logger.debug('适配器', `模型已设置为 ${codeName}`, meta);
         }
 
-        // 4.3 选择横竖版 (查找包含 16:9 或 9:16 的 combobox)
+        // 4.3 选择横竖版 (查找包含比例的 combobox)
         logger.debug('适配器', `选择尺寸: ${imageSize}...`, meta);
-        for (let i = 0; i < comboboxCount; i++) {
-            const combobox = allComboboxes.nth(i);
-            const text = await combobox.textContent().catch(() => '');
-            if (/16:9|9:16/.test(text)) {
-                await safeClick(page, combobox, { bias: 'button' });
-                await sleep(300, 500);
-                // 使用包含匹配，因为 option 名字中可能包含 16:9 或 9:16
-                const sizeOption = page.getByRole('option').filter({ hasText: imageSize });
-                await safeClick(page, sizeOption.first(), { bias: 'button' });
-                await sleep(300, 500);
-                logger.debug('适配器', `尺寸已设置为 ${imageSize}`, meta);
-                break;
-            }
-        }
+        const sizeCombobox = page.getByRole('combobox')
+            .filter({ hasText: /16:9|9:16/ });
 
-        // 关闭 Tune 菜单 (再次点击 tune 按钮)
-        await safeClick(page, tuneBtn, { bias: 'button' });
-        await sleep(500, 1000);
+        if (await sizeCombobox.count() > 0) {
+            await safeClick(page, sizeCombobox.first(), { bias: 'button' });
+            await sleep(300, 500);
+            const sizeOption = page.getByRole('option').filter({ hasText: imageSize });
+            await safeClick(page, sizeOption.first(), { bias: 'button' });
+            await sleep(300, 500);
+            logger.debug('适配器', `尺寸已设置为 ${imageSize}`, meta);
+        }
 
         // 5. 上传图片 (如果有)
         if (imgPaths && imgPaths.length > 0) {
@@ -252,6 +263,11 @@ export const manifest = {
 
     // 模型列表
     models: [
+        // 根据上传的第一张图片动态获取图片比例
+        { id: 'gemini-3-pro-image-preview', codeName: '🍌 Nano Banana Pro', imageSize: '0', imagePolicy: 'optional' },
+        { id: 'gemini-2.5-flash-image-preview', codeName: '🍌 Nano Banana', imageSize: '0', imagePolicy: 'optional' },
+        { id: 'imagen-4', codeName: 'Imagen 4', imageSize: '0', imagePolicy: 'optional' },
+        // 指定图片比例
         { id: 'gemini-3-pro-image-preview-landspace', codeName: '🍌 Nano Banana Pro', imageSize: '16:9', imagePolicy: 'optional' },
         { id: 'gemini-3-pro-image-preview-portrait', codeName: '🍌 Nano Banana Pro', imageSize: '9:16', imagePolicy: 'optional' },
         { id: 'gemini-2.5-flash-image-preview-landspace', codeName: '🍌 Nano Banana', imageSize: '16:9', imagePolicy: 'optional' },
