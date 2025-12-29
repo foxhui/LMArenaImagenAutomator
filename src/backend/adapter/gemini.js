@@ -15,8 +15,7 @@ import {
     moveMouseAway,
     waitForInput,
     gotoWithCheck,
-    waitApiResponse,
-    scrollToElement
+    waitApiResponse
 } from '../utils/index.js';
 import { logger } from '../../utils/logger.js';
 
@@ -174,8 +173,9 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
                     meta
                 });
 
-                // 将图片滚动到可视范围，触发懒加载
-                await scrollToElement(page, 'generated-image', { timeout: 120000 });
+                // 等待图片元素出现，然后在chat-history上滚动触发懒加载
+                await page.locator('generated-image').waitFor({ state: 'attached', timeout: 120000 });
+                await safeScroll(page, '#chat-history', { deltaY: 700 });
                 imageResponse = await imageResponsePromise;
             } catch (e) {
                 const pageError = normalizePageError(e, meta);

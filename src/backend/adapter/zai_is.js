@@ -137,8 +137,8 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
         await waitForInput(page, INPUT_SELECTOR, { click: false });
         await sleep(1500, 2500);
 
-        // 2. 上传图片 (如果有多张图片，会一张一张上传，每次都是 v1/files POST 请求)
-        if (imgPaths && imgPaths.length > 0) {
+        // 2. 并行执行：上传图片 + 填写提示词
+        const uploadTask = (imgPaths && imgPaths.length > 0) ? (async () => {
             const expectedUploads = imgPaths.length;
             let uploadedCount = 0;
 
@@ -155,13 +155,20 @@ async function generate(context, prompt, imgPaths, modelId, meta = {}) {
                     return false;
                 }
             });
+            await sleep(500, 1000);
+        })() : Promise.resolve();
 
-            await sleep(1000, 2000);
-        }
+        const promptTask = (async () => {
+            // 等待一小段时间，让图片上传先开始（pasteImages 会先点击输入框）
+            if (imgPaths && imgPaths.length > 0) {
+                await sleep(800, 1200);
+            }
+            await safeClick(page, INPUT_SELECTOR, { bias: 'input' });
+            await fillPrompt(page, INPUT_SELECTOR, prompt, meta);
+        })();
 
-        // 3. 填写提示词
-        await safeClick(page, INPUT_SELECTOR, { bias: 'input' });
-        await fillPrompt(page, INPUT_SELECTOR, prompt, meta);
+        // 等待两个任务都完成
+        await Promise.all([uploadTask, promptTask]);
         await sleep(500, 1000);
 
         // 4. 通过 UI 交互选择模型
